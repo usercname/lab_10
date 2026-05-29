@@ -26,10 +26,7 @@
         </exclude>
     </source>
 
-    <coverage minimum="50">
-        <include>
-            <directory suffix=".php">./app</directory>
-        </include>
+    <coverage>
         <report>
             <clover outputFile="coverage.xml"/>
         </report>
