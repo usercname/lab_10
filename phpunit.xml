@@ -1,4 +1,10 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnRisky="false"
+>
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
@@ -13,10 +19,6 @@
             <directory suffix=".php">./app/Http/Controllers</directory>
             <directory suffix=".php">./app/Models</directory>
         </include>
-        <exclude>
-            <directory suffix=".php">./app/Http/Requests</directory>
-            <directory suffix=".php">./app/Providers</directory>
-        </exclude>
     </source>
 
     <coverage>
@@ -30,6 +32,5 @@
         <env name="CACHE_STORE" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
-        <!-- Остальные переменные берутся из .env.testing -->
     </php>
 </phpunit>
