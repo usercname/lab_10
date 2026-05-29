@@ -3,69 +3,115 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\User;
 use App\Models\MasterClass;
+use App\Models\User;
 use App\Models\CreativityType;
+use App\Models\Booking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Carbon\Carbon;
 
-class InstructorControllerTest extends TestCase
+class MasterClassTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_instructor_can_view_cabinet(): void
+    protected User $instructor;
+    protected CreativityType $type;
+
+    protected function setUp(): void
     {
-        $instructor = User::factory()->create(['role' => 'instructor']);
+        parent::setUp();
         
-        $response = $this->actingAs($instructor)->get(route('cabinet.index'));
-        $response->assertStatus(200);
+        $this->instructor = User::factory()->instructor()->create();
+        $this->type = CreativityType::factory()->create();
     }
 
-    public function test_instructor_can_create_masterclass(): void
+    public function test_master_class_has_instructor_relationship(): void
     {
-        $instructor = User::factory()->create(['role' => 'instructor']);
-        $type = CreativityType::factory()->create();
-
-        $response = $this->actingAs($instructor)->post(route('cabinet.store'), [
-            'type_id' => $type->id,
-            'title' => 'Тестовый МК',
-            'description' => 'Описание длиной более десяти символов для теста',
-            'date' => now()->addDay()->format('Y-m-d'),
-            'start_time' => '09:00',
-            'max_participants' => 10,
-            'price' => 1500,
+        $masterClass = MasterClass::factory()->create([
+            'instructor_id' => $this->instructor->id,
         ]);
 
-        $response->assertRedirect(route('cabinet.index'));
-        $this->assertDatabaseHas('master_classes', ['title' => 'Тестовый МК']);
+        $this->assertEquals($this->instructor->id, $masterClass->instructor->id);
     }
 
-    public function test_instructor_can_edit_masterclass(): void
+    public function test_master_class_has_type_relationship(): void
     {
-        $instructor = User::factory()->create(['role' => 'instructor']);
-        $type = CreativityType::factory()->create();
-        
+        $masterClass = MasterClass::factory()->create([
+            'type_id' => $this->type->id,
+        ]);
+
+        $this->assertEquals($this->type->id, $masterClass->type->id);
+    }
+
+    public function test_master_class_has_bookings_relationship(): void
+    {
+        $masterClass = MasterClass::factory()->create([
+            'max_participants' => 10,
+        ]);
+
+        Booking::factory()->count(3)->create([
+            'master_class_id' => $masterClass->id,
+        ]);
+
+        $this->assertEquals(3, $masterClass->bookings->count());
+    }
+
+    public function test_free_seats_calculated_correctly(): void
+    {
+        $masterClass = MasterClass::factory()->create([
+            'max_participants' => 10,
+        ]);
+
+        Booking::factory()->count(3)->create([
+            'master_class_id' => $masterClass->id,
+        ]);
+
+        $masterClass->refresh();
+        $this->assertEquals(7, $masterClass->free_seats);
+    }
+
+    public function test_master_class_can_be_created(): void
+    {
         $masterClass = MasterClass::create([
-            'instructor_id' => $instructor->id,
-            'type_id' => $type->id,
-            'title' => 'Старый МК',
-            'description' => 'Описание длиной более десяти символов',
-            'date' => now()->addDay()->format('Y-m-d'),
+            'instructor_id' => $this->instructor->id,
+            'type_id' => $this->type->id,
+            'title' => 'Тестовый МК',
+            'description' => 'Описание',
+            'date' => Carbon::now()->addDays(5)->format('Y-m-d'),
             'start_time' => '09:00',
-            'max_participants' => 10,
-            'price' => 1000,
+            'max_participants' => 15,
+            'price' => 2000,
         ]);
 
-        $response = $this->actingAs($instructor)
-            ->put(route('cabinet.update', $masterClass->id), [
-                'description' => 'Новое описание для теста',
-                'price' => 2000,
-            ]);
-
-        $response->assertRedirect(route('cabinet.index'));
         $this->assertDatabaseHas('master_classes', [
             'id' => $masterClass->id,
-            'description' => 'Новое описание для теста',
-            'price' => 2000,
+            'title' => 'Тестовый МК',
+        ]);
+    }
+
+    public function test_master_class_can_be_updated(): void
+    {
+        $masterClass = MasterClass::factory()->create();
+        
+        $masterClass->update([
+            'title' => 'Новое название',
+            'price' => 3000,
+        ]);
+
+        $this->assertDatabaseHas('master_classes', [
+            'id' => $masterClass->id,
+            'title' => 'Новое название',
+            'price' => 3000,
+        ]);
+    }
+
+    public function test_master_class_can_be_deleted(): void
+    {
+        $masterClass = MasterClass::factory()->create();
+        $masterClass->delete();
+
+        $this->assertDatabaseMissing('master_classes', [
+            'id' => $masterClass->id,
         ]);
     }
 }

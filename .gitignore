@@ -2,7 +2,6 @@
 # Environment files
 .env
 .env.backup
-.env.ci.backup
 !.env.example
 !.env.ci
 !.env.dev

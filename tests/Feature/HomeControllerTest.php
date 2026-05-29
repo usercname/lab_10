@@ -27,8 +27,7 @@ class HomeControllerTest extends TestCase
         $this->type = CreativityType::factory()->create();
     }
 
-    /** @test */
-    public function guest_can_view_home_page(): void
+    public function test_guest_can_view_home_page(): void
     {
         $response = $this->get(route('home'));
 
@@ -39,29 +38,24 @@ class HomeControllerTest extends TestCase
         $response->assertViewHas('myBookings');
     }
 
-    /** @test */
-    public function home_page_shows_all_creativity_types(): void
+    public function test_home_page_shows_all_creativity_types(): void
     {
-        // Создаём дополнительные типы для проверки
         CreativityType::factory()->count(2)->create();
 
         $response = $this->get(route('home'));
 
         $types = $response->viewData('types');
-        $this->assertEquals(3, $types->count()); // 1 из setUp + 2 созданных
+        $this->assertEquals(3, $types->count());
     }
 
-    /** @test */
-    public function home_page_shows_future_master_classes_only(): void
+    public function test_home_page_shows_future_master_classes_only(): void
     {
-        // Прошедший МК (не должен попасть в выборку)
         MasterClass::factory()->create([
             'instructor_id' => $this->instructor->id,
             'type_id' => $this->type->id,
             'date' => Carbon::now()->subDays(2)->format('Y-m-d'),
         ]);
 
-        // Будущие МК
         $futureClass1 = MasterClass::factory()->create([
             'instructor_id' => $this->instructor->id,
             'type_id' => $this->type->id,
@@ -82,8 +76,7 @@ class HomeControllerTest extends TestCase
         $this->assertTrue($classes->contains($futureClass2));
     }
 
-    /** @test */
-    public function home_page_orders_classes_by_date_and_start_time(): void
+    public function test_home_page_orders_classes_by_date_and_start_time(): void
     {
         $classLater = MasterClass::factory()->create([
             'instructor_id' => $this->instructor->id,
@@ -102,15 +95,12 @@ class HomeControllerTest extends TestCase
         $response = $this->get(route('home'));
         $classes = $response->viewData('allClasses');
 
-        // Первым должен идти МК с более ранней датой
         $this->assertEquals($classEarlier->id, $classes->first()->id);
         $this->assertEquals($classLater->id, $classes->last()->id);
     }
 
-    /** @test */
-    public function guest_has_empty_bookings_collection(): void
+    public function test_guest_has_empty_bookings_collection(): void
     {
-        // Создаём бронь для другого пользователя
         $masterClass = MasterClass::factory()->create([
             'instructor_id' => $this->instructor->id,
             'type_id' => $this->type->id,
@@ -121,7 +111,6 @@ class HomeControllerTest extends TestCase
             'master_class_id' => $masterClass->id,
         ]);
 
-        // Гость не видит чужих броней
         $response = $this->get(route('home'));
 
         $myBookings = $response->viewData('myBookings');
@@ -129,8 +118,7 @@ class HomeControllerTest extends TestCase
         $this->assertEmpty($myBookings);
     }
 
-    /** @test */
-    public function authenticated_user_sees_their_bookings(): void
+    public function test_authenticated_user_sees_their_bookings(): void
     {
         $masterClass = MasterClass::factory()->create([
             'instructor_id' => $this->instructor->id,
@@ -138,13 +126,11 @@ class HomeControllerTest extends TestCase
             'date' => Carbon::now()->addDays(1)->format('Y-m-d'),
         ]);
 
-        // Бронь текущего пользователя
         $myBooking = Booking::factory()->create([
             'user_id' => $this->user->id,
             'master_class_id' => $masterClass->id,
         ]);
 
-        // Бронь другого пользователя (не должна попасть в выборку)
         $otherUser = User::factory()->create();
         Booking::factory()->create([
             'user_id' => $otherUser->id,
@@ -159,10 +145,8 @@ class HomeControllerTest extends TestCase
         $this->assertTrue($myBookings->contains($myBooking));
     }
 
-    /** @test */
-    public function home_page_loads_relationships_to_prevent_n_plus_one(): void
+    public function test_home_page_loads_relationships_to_prevent_n_plus_one(): void
     {
-        // Создаём МК и бронь
         $masterClass = MasterClass::factory()->create([
             'instructor_id' => $this->instructor->id,
             'type_id' => $this->type->id,
@@ -180,7 +164,6 @@ class HomeControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Благодаря with(['instructor', 'type']) запросов должно быть ≤ 4
-        $this->assertLessThanOrEqual(15, count($queries), 'Возможна проблема N+1 запросов');
+        $this->assertLessThanOrEqual(15, count($queries));
     }
 }
