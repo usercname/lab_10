@@ -54,9 +54,9 @@ jobs:
       - name: Run tests with coverage
         run: |
           vendor/bin/phpunit \
-            --coverage-clover=coverage.xml \
-            --coverage-text --colors=never \
-            --log-junit=report.xml
+          --coverage-clover coverage.xml \
+          --coverage-text \
+          --colors=never
 
       - name:  Check coverage >= 50%
         run: |
