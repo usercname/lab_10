@@ -1,0 +1,29 @@
+```gitignore
+# Environment files
+.env
+.env.backup
+.env.ci.backup
+!.env.example
+!.env.ci
+!.env.dev
+!.env.uat
+!.env.prod
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Laravel
+public/storage
+public/hot
+bootstrap/cache/*
+storage/*.key
+node_modules/
+vendor/
+
+# Testing
+coverage.xml
+coverage-report/
+.phpunit.result.cache

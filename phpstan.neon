@@ -1,0 +1,15 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: max
+    paths:
+        - app
+    excludePaths:
+        - app/Http/Requests/*
+        - app/Models/*
+    reportStaticMethodSignatures: true
+    treatPhpDocTypesAsCertain: true
+    ignoreErrors:
+        - '#Call to an undefined method#'
+        - '#Access to an undefined property#'
