@@ -10,7 +10,7 @@ use App\Models\Booking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
 
-class MasterClassTest extends TestCase
+class InstructorControllerTest extends TestCase
 {
     use RefreshDatabase;
 
