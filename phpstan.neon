@@ -4,7 +4,6 @@ parameters:
         - app/
     bootstrapFiles:
         - vendor/larastan/larastan/bootstrap.php
-    generics: true
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Contracts\\Auth\\Authenticatable::#'
         - '#Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable::\$#'
