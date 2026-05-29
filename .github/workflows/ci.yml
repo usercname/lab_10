@@ -16,10 +16,10 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup PHP ${{ env.PHP_VERSION }}
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
@@ -28,7 +28,7 @@ jobs:
           tools: composer:${{ env.COMPOSER_VERSION }}
           ini-values: date.timezone=UTC
 
-      - name: 📦 Cache Composer dependencies
+      - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
           path: vendor
@@ -36,22 +36,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
-      - name: 📦 Install Composer dependencies
+      - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
-      - name: 🔑 Generate APP_KEY
-        run: php artisan key:generate --force
-
-      - name: 🗄️ Setup CI environment
+      - name: Setup CI environment
         run: |
           cp .env.ci .env
+          if ! grep -q "^APP_KEY=" .env; then
+            echo "APP_KEY=base64:TCOv1kY8VqKJZL7xKqVqVqVqVqVqVqVqVqVqVqVqVqA=" >> .env
+          fi
           php artisan config:clear
           php artisan cache:clear
 
-      - name: 🗃️ Run migrations
+      - name: Run migrations
         run: php artisan migrate:refresh --force
 
-      - name: 🧪 Run tests with coverage
+      - name: Run tests with coverage
         run: |
           vendor/bin/phpunit \
             --coverage-clover=coverage.xml \
@@ -61,19 +61,19 @@ jobs:
       - name:  Check coverage >= 50%
         run: |
           if [ ! -f coverage.xml ]; then
-            echo "❌ coverage.xml not found"
+            echo "coverage.xml not found"
             exit 1
           fi
           COVERAGE=$(grep -oP 'lines:\s*\K\d+\.\d+' coverage.xml | head -1)
           COVERAGE=${COVERAGE:-0}
-          echo "📈 Code coverage: ${COVERAGE}%"
+          echo "Code coverage: ${COVERAGE}%"
           if (( $(echo "$COVERAGE < 50" | bc -l) )); then
-            echo "❌ Coverage ${COVERAGE}% is below required 50%"
+            echo "Coverage ${COVERAGE}% is below required 50%"
             exit 1
           fi
-          echo "✅ Coverage check passed"
+          echo "Coverage check passed"
 
-      - name: 🔍 Static Analysis (PHPStan/Larastan)
+      - name: Static Analysis (PHPStan/Larastan)
         run: |
           vendor/bin/phpstan analyse \
             --level=max \
@@ -82,11 +82,11 @@ jobs:
             --memory-limit=1G \
             app/
 
-      - name: 🎨 Linting (Laravel Pint)
+      - name: Linting (Laravel Pint)
         run: |
           vendor/bin/pint --test --verbose
 
-      - name: 🗂️ Upload test artifacts
+      - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -105,19 +105,19 @@ jobs:
       name: ${{ github.ref_name == 'main' && 'production' || github.ref_name == 'qa' && 'staging' || 'development' }}
 
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup PHP
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: bcmath, ctype, fileinfo, json, mbstring, pdo, tokenizer, xml, sqlite
 
-      - name: 📦 Install Composer dependencies (prod)
+      - name: Install Composer dependencies (prod)
         run: composer install --prefer-dist --no-interaction --no-progress --no-dev
 
-      - name: 🎯 Determine environment
+      - name: Determine environment
         id: env
         run: |
           case "${{ github.ref_name }}" in
@@ -143,21 +143,24 @@ jobs:
               ;;
           esac
 
-      - name: 📋 Copy environment file
+      - name: Copy environment file
         run: |
           if [ -f "${{ steps.env.outputs.ENV_FILE }}" ]; then
             cp "${{ steps.env.outputs.ENV_FILE }}" .env
-            echo "✅ Loaded ${{ steps.env.outputs.ENV_FILE }}"
+            echo "Loaded ${{ steps.env.outputs.ENV_FILE }}"
+          else
+            echo "File ${{ steps.env.outputs.ENV_FILE }} not found, using .env.example"
+            cp .env.example .env
           fi
-          echo "🔗 APP_URL=$(grep '^APP_URL=' .env | cut -d= -f2 || echo 'not set')"
-          echo "🗄️ DB_DATABASE=$(grep '^DB_DATABASE=' .env | cut -d= -f2 || echo 'not set')"
+          echo "APP_URL=$(grep '^APP_URL=' .env | cut -d= -f2 || echo 'not set')"
+          echo "DB_DATABASE=$(grep '^DB_DATABASE=' .env | cut -d= -f2 || echo 'not set')"
 
-      - name: 💬 Deploy simulation message
+      - name: Deploy simulation message
         run: |
-          echo "✅ Deploying to [${{ steps.env.outputs.ENV }}] with ${{ steps.env.outputs.ENV_FILE }}"
-          echo "🌿 Branch: ${{ github.ref_name }}"
-          echo "🔖 Commit: ${{ github.sha }}"
-          echo "👤 Triggered by: ${{ github.actor }}"
+          echo "Deploying to [${{ steps.env.outputs.ENV }}] with ${{ steps.env.outputs.ENV_FILE }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Triggered by: ${{ github.actor }}"
 
   notify:
     runs-on: ubuntu-latest
@@ -165,7 +168,7 @@ jobs:
     if: always() && github.event_name == 'push'
 
     steps:
-      - name: 📢 Check pipeline status
+      - name: Check pipeline status
         id: status
         run: |
           if [ "${{ needs.test-and-analyze.result }}" == "success" ] && [ "${{ needs.simulate-deploy.result }}" == "success" ]; then
@@ -178,10 +181,10 @@ jobs:
             echo "message=Pipeline failed" >> $GITHUB_OUTPUT
           fi
 
-      - name: 📋 Log result
+      - name: Log result
         run: |
           echo "${{ steps.status.outputs.emoji }} ${{ steps.status.outputs.message }} for branch: ${{ github.ref_name }}"
           if [ "${{ steps.status.outputs.status }}" == "failed" ]; then
-            echo "🔍 Check the workflow run for details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "Check the workflow run for details"
             exit 1
           fi
