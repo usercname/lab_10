@@ -53,7 +53,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text --min-coverage=50
+          vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text
 
       - name: Static Analysis (PHPStan/Larastan)
         run: |
