@@ -58,7 +58,7 @@ jobs:
             --coverage-text --colors=never \
             --log-junit=report.xml
 
-      - name: 📊 Gate: Check coverage >= 50%
+      - name:  Check coverage >= 50%
         run: |
           if [ ! -f coverage.xml ]; then
             echo "❌ coverage.xml not found"
