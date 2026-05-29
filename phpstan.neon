@@ -5,14 +5,18 @@ parameters:
     bootstrapFiles:
         - vendor/larastan/larastan/bootstrap.php
     ignoreErrors:
-        - '#Call to an undefined method#'
-        - '#Relation .* is not found#'
-        - '#Cannot access offset .* on mixed#'
+        - '#Call to an undefined static method App\\Models\\#'
+        - '#Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable::\$#'
+        - '#Access to an undefined property Illuminate\\Http\\Request::\$#'
+        - '#should return Illuminate\\View\\View but returns Illuminate\\Contracts\\View\\View#'
+        - '#Access to an undefined property App\\Models\\MasterClass::\$#'
+        - '#Access to an undefined property App\\Models\\User::\$#'
         - '#Parameter .* expects .*, mixed given#'
+        - '#Cannot access offset .* on mixed#'
         - '#Binary operation .* results in an error#'
         - '#Only iterables can be unpacked#'
-        - '#Cannot access property .* on .*\|null#'
         - '#Cannot call method .* on .*\|null#'
         - '#Method .* has no return type specified#'
         - '#Parameter .* has no type specified#'
+        - '#Relation .* is not found#'
     reportUnmatchedIgnoredErrors: false
