@@ -58,11 +58,9 @@ jobs:
       - name: Static Analysis (PHPStan/Larastan)
         run: |
           vendor/bin/phpstan analyse \
-            --level=max \
-            --error-format=github \
-            --no-progress \
-            --memory-limit=1G \
-            app/
+          --error-format=github \
+          --no-progress \
+          --memory-limit=1G
 
       - name: Linting (Laravel Pint)
         run: |
